@@ -13,7 +13,7 @@ int searchFrom(char **arr, int *path, int row, int col, char *word, int index);
 int bSize;
 
 // using directions for dfs search represented in an array
-int directions[16] = {
+int directions[] = {
     -1, -1, // Up-Left
     -1, 0,  // Up
     -1, 1,  // Up-Right
@@ -86,18 +86,19 @@ void printPuzzle(char **arr)
     {
         for (j = 0; j < bSize; j++)
         {
-            printf("%c ", *(*arr + i) + j);
+            printf("%c\t", *(*(arr + i) + j));
         }
+    printf("\n");
     }
 
-    printf("\n");
 }
+
 
 char toLower(char ch)
 {
     if (ch >= 'A' && ch <= 'Z')
-    {
-        return ch + 32;
+    {   
+        return ch + ('a' - 'A');
     }
     return ch;
 }
@@ -122,12 +123,6 @@ int dfs_Search(char **arr, int *path, int row, int col, char *word, int index)
     // for the character at word[index]. 'path' holds the search path in a one-dimensional
     // represenation of the grid.
 
-    // variables for indexes
-    // original is for the word
-    // position is for the 2D-array
-    int position;
-    int original;
-
     // Base case, end of the word
     if (*(word + index) == '\0')
         return 1;
@@ -145,14 +140,20 @@ int dfs_Search(char **arr, int *path, int row, int col, char *word, int index)
         return 0;
 
     // Determine the current cell index in the one-dimensional path array.
-    markPath(path, row, col, index, position, original);
-    
+    int position = row * bSize + col;
+    int original = *(path + position);
+
+    // Append the path order visited  (index + 1) to the current path cell
+    // Use a multipler (10 for numbers less than 10, else do 100) for formatting
+    int char_order = index + 1;
+    int multiplier = (char_order < 10) ? 10 : 100;
+    *(path + position) = original * multiplier + char_order;
+
     // searching through all 8 directions and recursively call function
-    int d; 
-    for (d = 0; d < 8; d++){
+    for (int d = 0; d < 8; d++){
         int curr_Row = row + *(directions +  2 * d);
         int curr_Col = col + *(directions + 2 * d + 1);
-        if (searchFrom(arr, path, curr_Row, curr_Col, word, index + 1)){
+        if (dfs_Search(arr, path, curr_Row, curr_Col, word, index + 1)){
             return 1;
         }
     }
@@ -162,13 +163,57 @@ int dfs_Search(char **arr, int *path, int row, int col, char *word, int index)
     return 0;
 }
 
-void searchPuzzle(char **arr, char *word)
-{
+void searchPuzzle(char **arr, char *word){
     // This function checks if arr contains the search word. If the
     // word appears in arr, it will print out a message and the path
     // as shown in the sample runs. If not found, it will print a
     // different message as shown in the sample runs.
     // Your implementation here...
-
     
+    int arrSize = bSize * bSize;
+    int *answerPath = (int*)malloc(arrSize * sizeof(int));
+
+    if (answerPath == (void *)0){
+        printf("Memeory allocatino error for solution path\n");
+        return;
+    }
+    
+    // convert word to lowercase
+    for (int i = 0; word[i]; i++){
+        word[i] = toLower(word[i]);
+    }
+
+    // create solution path array to 0 for each row
+    for (int i = 0; i < arrSize; i++){
+        *(answerPath + i) = 0;
+    }
+
+    // Recurse the whole array till word is found
+    int found = 0;
+    for (int row = 0; row < bSize && !found; row++){
+        for (int col = 0; col < bSize && !found; col++){
+            if (dfs_Search(arr, answerPath, row, col, word, 0)){
+                found = 1; // word found
+            }
+        }
+    }
+
+    if (found) {
+        printf("Word found!\n Printing the search path:\n");
+
+        for (int i = 0; i < bSize; i++){
+            for (int j = 0; j < bSize; j++){
+                int position = i * bSize + j; // explain why we add position
+                printf("%d\t", *(answerPath + position));
+            }
+            printf("\n");
+        }
+        
+    }
+    
+    else
+        printf("Word not found.\n");
+
+    free(answerPath);
+
 }
