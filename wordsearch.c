@@ -100,21 +100,9 @@ char toLower(char ch)
     {   
         return ch + ('a' - 'A');
     }
-    return ch;
+    return ch; 
 }
 
-void markPath(int *path, int row, int col, int index, int position, int original){
-
-    // Determine the current cell index in the one-dimensional path array.
-    position = row * bSize + col;
-    original = *(path + position);
-
-    // Append the path order visited  (index + 1) to the current path cell
-    // Use a multipler (10 for numbers less than 10, else do 100) for formatting
-    int char_order = index + 1;
-    int multiplier = (char_order < 10) ? 10 : 100;
-    *(path + position) = original * multiplier + char_order;
-}
 
 int dfs_Search(char **arr, int *path, int row, int col, char *word, int index)
 {
@@ -153,7 +141,7 @@ int dfs_Search(char **arr, int *path, int row, int col, char *word, int index)
     for (int d = 0; d < 8; d++){
         int curr_Row = row + *(directions +  2 * d);
         int curr_Col = col + *(directions + 2 * d + 1);
-        if (dfs_Search(arr, path, curr_Row, curr_Col, word, index + 1)){
+        if (dfs_Search(arr, path, curr_Row, curr_Col, word, index + 1) == 1){
             return 1;
         }
     }
@@ -192,19 +180,20 @@ void searchPuzzle(char **arr, char *word){
     int found = 0;
     for (int row = 0; row < bSize && !found; row++){
         for (int col = 0; col < bSize && !found; col++){
-            if (dfs_Search(arr, answerPath, row, col, word, 0)){
+            if (dfs_Search(arr, answerPath, row, col, word, 0) == 1){
                 found = 1; // word found
+                break;
             }
         }
     }
 
-    if (found) {
+    if (found != 0) {
         printf("Word found!\n Printing the search path:\n");
 
         for (int i = 0; i < bSize; i++){
             for (int j = 0; j < bSize; j++){
                 int position = i * bSize + j; // explain why we add position
-                printf("%d\t", *(answerPath + position));
+                printf("%d\t", *(answerPath + ((i * bSize) + j)));
             }
             printf("\n");
         }
